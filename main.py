@@ -8,9 +8,9 @@ pd.set_option('display.max_columns', None)
 
 from business import EDA
 
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.preprocessing import (
-    OrdinalEncoder, MinMaxScaler
+    OrdinalEncoder, MinMaxScaler, OneHotEncoder
     )
 from sklearn.metrics import (
     confusion_matrix, ConfusionMatrixDisplay, classification_report
@@ -25,7 +25,6 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 
 from sklearn.ensemble import RandomForestClassifier
-
 
 
 #%% I.1 DATA PREPROCESSING => None
@@ -47,7 +46,14 @@ eda.plot_corr()
 # Check variance inflation factor
 eda.check_vif()
 
-#%% I.2 DATA PREP => X_train_array, y_train_array, X_test_array, y_test_array
+#%% I.2 DATA PREP
+
+X_train_array, X_test_array, y_train_array, y_test_array = (
+    eda.load_encoded_data(method='ordinal')
+    )
+
+# %% ----------------- TEST ---------------
+
 target = ['purchased']
 y = df[target]
 X = df.drop(columns=target)
@@ -56,30 +62,26 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=365, stratify=y
     )
 
-encoder = OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=175)
-X_train['student_country_enc'] = encoder.fit_transform(
-    X_train['student_country']
-    .to_numpy()
-    .reshape(-1, 1)
-    )
-X_train.drop(columns='student_country', inplace=True)
-X_train_array = X_train.to_numpy()
-y_train_array = y_train.to_numpy()
 
-X_test['student_country_enc'] = encoder.transform(
-    X_test['student_country']
-    .to_numpy()
-    .reshape(-1, 1)
+encoder = OneHotEncoder(sparse_output=False)
+X_train_country_array = encoder.fit_transform(
+    X_train[['student_country']]
     )
-X_test.drop(columns='student_country', inplace=True)
-X_test_array = X_test.to_numpy()
-y_test_array = y_test.to_numpy()
+
+X_train_nocountry_array = X_train.drop(columns='student_country').to_numpy()
+
+X_train_array = np.concatenate((X_train_country_array, X_train_nocountry_array), axis=1)
+
+#---> need to drop country column in X
 
 
 #%% II. LOGISTIC REGRESSION
 
-acc_baseline = y.value_counts(normalize=True).max()
-
+acc_baseline = (
+    pd.Series(y_train_array.reshape(1, -1)[0])
+    .value_counts(normalize=True)
+    .max()
+    )
 
 X_train_array = sm.add_constant(X_train_array)
 X_test_array = sm.add_constant(X_test_array)
