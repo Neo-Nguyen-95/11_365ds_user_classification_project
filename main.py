@@ -49,30 +49,14 @@ eda.check_vif()
 #%% I.2 DATA PREP
 
 X_train_array, X_test_array, y_train_array, y_test_array = (
-    eda.load_encoded_data(method='ordinal')
+    eda.load_encoded_data(method='one-hot')
     )
 
-# %% ----------------- TEST ---------------
-
-target = ['purchased']
-y = df[target]
-X = df.drop(columns=target)
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=365, stratify=y
-    )
-
-
-encoder = OneHotEncoder(sparse_output=False)
-X_train_country_array = encoder.fit_transform(
-    X_train[['student_country']]
-    )
-
-X_train_nocountry_array = X_train.drop(columns='student_country').to_numpy()
-
-X_train_array = np.concatenate((X_train_country_array, X_train_nocountry_array), axis=1)
-
-#---> need to drop country column in X
+# Double check after split
+print(f'X train shape is: {X_train_array.shape}')
+print(f'y train shape is: {y_train_array.shape}')
+print(f'X test shape is: {X_test_array.shape}')
+print(f'y test shape is: {y_test_array.shape}')
 
 
 #%% II. LOGISTIC REGRESSION

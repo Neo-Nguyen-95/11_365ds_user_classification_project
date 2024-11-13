@@ -105,9 +105,9 @@ class EDA:
             X_test_array = X_test.to_numpy()
             
         # --- NOT DONE YET ---
-        else:  # method == 'one-hot'
+        elif method == 'one-hot':
             
-            encoder = OneHotEncoder(sparse_output=False)
+            encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
             X_train_country_array = encoder.fit_transform(
                 X_train[['student_country']]
                 )
@@ -118,10 +118,22 @@ class EDA:
 
             X_train_array = np.concatenate(
                 (X_train_country_array, X_train_nocountry_array), 
-                axis=1)
+                axis=1
+                )
             
-            ### not ok yet because X_train and X_test will result in different dimension
-        
+            X_test_country_array = encoder.transform(
+                X_test[['student_country']]
+                )
+            
+            X_test_nocountry_array = (X_test.drop(columns='student_country')
+                                       .to_numpy()
+                                       )
+            
+            X_test_array = np.concatenate(
+                (X_test_country_array, X_test_nocountry_array), 
+                axis=1
+                )
+            
         
         return X_train_array, X_test_array, y_train_array, y_test_array
         
