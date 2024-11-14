@@ -49,7 +49,7 @@ eda.check_vif()
 #%% I.2 DATA PREP
 
 X_train_array, X_test_array, y_train_array, y_test_array = (
-    eda.load_encoded_data(method='one-hot')
+    eda.load_encoded_data(method='ordinal')
     )
 
 # Double check after split
@@ -57,7 +57,6 @@ print(f'X train shape is: {X_train_array.shape}')
 print(f'y train shape is: {y_train_array.shape}')
 print(f'X test shape is: {X_test_array.shape}')
 print(f'y test shape is: {y_test_array.shape}')
-
 
 #%% II. LOGISTIC REGRESSION
 
@@ -97,7 +96,7 @@ print(f'Accuracy on training data: {acc_train*100:.2f} %')
 
 print(f'Accuracy on test data: {acc_test*100:.2f} %')
 
-cm = confusion_matrix(y_test, y_test_pred)
+cm = confusion_matrix(y_test_array, y_test_pred)
 disp = ConfusionMatrixDisplay(confusion_matrix=cm)
 disp.plot(cmap='Blues')
 plt.show()
@@ -115,17 +114,22 @@ grid_search_knn.fit(X_train_array, y_train_array)
 knn_clf = grid_search_knn.best_estimator_
 grid_search_knn.best_score_
 
+y_train_pred = knn_clf.predict(X_train_array).reshape(-1, 1)
+acc_train = (y_train_pred == y_train_array).sum() / len(y_train_array)
+
+print(f'Accuracy on train data: {acc_train*100:.2f} %')
+
 y_test_pred = knn_clf.predict(X_test_array).reshape(-1, 1)
 acc_test = (y_test_pred == y_test_array).sum() / len(y_test_array)
 
 print(f'Accuracy on test data: {acc_test*100:.2f} %')
 
-cm = confusion_matrix(y_test, y_test_pred)
+cm = confusion_matrix(y_test_array, y_test_pred)
 disp = ConfusionMatrixDisplay(confusion_matrix=cm)
 disp.plot(cmap='Blues')
 plt.show()
 
-report = classification_report(y_test, y_test_pred)
+report = classification_report(y_test_array, y_test_pred)
 print(report)
 
 #%% IV. Support Vector Machines Model
@@ -147,17 +151,22 @@ grid_search_svm.fit(X_train_scaled, y_train_array)
                                
 svm_clf = grid_search_svm.best_estimator_
 
+y_train_pred = svm_clf.predict(X_train_scaled).reshape(-1, 1)
+acc_train = (y_train_pred == y_train_array).sum() / len(y_train_array)
+
+print(f'Accuracy on train data: {acc_train*100:.2f} %')
+
 y_test_pred = svm_clf.predict(X_test_scaled).reshape(-1, 1)
 acc_test = (y_test_pred == y_test_array).sum() / len(y_test_array)
 
 print(f'Accuracy on test data: {acc_test*100:.2f} %')
 
-cm = confusion_matrix(y_test, y_test_pred)
+cm = confusion_matrix(y_test_array, y_test_pred)
 disp = ConfusionMatrixDisplay(confusion_matrix=cm)
 disp.plot(cmap='Blues')
 plt.show()
 
-report = classification_report(y_test, y_test_pred)
+report = classification_report(y_test_array, y_test_pred)
 print(report)
 
 #%% V. Decision Trees Model
@@ -191,6 +200,8 @@ dct_clf.fit(X_train_array, y_train_array)
 y_train_pred = dct_clf.predict(X_train_array).reshape(-1, 1)
 acc_train = (y_train_pred == y_train_array).sum() / len(y_train_pred)
 
+print(f'Accuracy on train data: {acc_train*100:.2f} %')
+
 
 y_test_pred = dct_clf.predict(X_test_array).reshape(-1, 1)
 acc_test = (y_test_pred == y_test_array).sum() / len(y_test_array)
@@ -198,22 +209,22 @@ acc_test = (y_test_pred == y_test_array).sum() / len(y_test_array)
 print(f'Accuracy on test data: {acc_test*100:.2f} %')
 
 
-fig, ax = plt.subplots(figsize=(25, 12))
+# fig, ax = plt.subplots(figsize=(25, 12))
 
-plot_tree(
-    decision_tree=dct_clf,
-    feature_names=X_train.columns.to_list(),
-    filled=True,
-    rounded=True,
-    proportion=True,
-    max_depth=3,
-    fontsize=12,
-    ax=ax,
-    );
+# plot_tree(
+#     decision_tree=dct_clf,
+#     feature_names=X_train.columns.to_list(),
+#     filled=True,
+#     rounded=True,
+#     proportion=True,
+#     max_depth=3,
+#     fontsize=12,
+#     ax=ax,
+#     );
 
-plt.show()
+# plt.show()
 
-report = classification_report(y_test, y_test_pred)
+report = classification_report(y_test_array, y_test_pred)
 print(report)
 
 #%% VI. Random Forest model
@@ -226,12 +237,16 @@ rf = RandomForestClassifier(
 
 rf.fit(X_train_array, y_train_array)
 
+y_train_pred = rf.predict(X_train_array).reshape(-1, 1)
+acc_train = (y_train_pred == y_train_array).sum() / len(y_train_pred)
+print(f'Accuracy on train data: {acc_train*100:.2f} %')
+
 y_test_pred = rf.predict(X_test_array).reshape(-1, 1)
 acc_test = (y_test_pred == y_test_array).sum() / len(y_test_array)
 
 print(f'Accuracy on test data: {acc_test*100:.2f} %')
 
-cm = confusion_matrix(y_test, y_test_pred)
+cm = confusion_matrix(y_test_array, y_test_pred)
 disp = ConfusionMatrixDisplay(confusion_matrix=cm)
 disp.plot(cmap='Blues')
 plt.show()
